@@ -2,10 +2,8 @@ import os.path
 import os
 from collections import defaultdict
 from mutagen.mp3 import MP3
-from gi.repository import Gtk
 
 MP3_EXTENSION = '.mp3'
-PATH_TO_PROCESS = '/Music'
 
 def get_song(filename):        
     audio = MP3(filename)
@@ -20,47 +18,10 @@ class Song:
         self.size = size
         self.length = length
 
-class TextUI:
-    def show_message(self, message):
-        print(message)
-    def show_warning(self, message):
-        print('WARNING %s' % message)
-    def add_dupe(self, dupe_description):
-        print(dupe_description)
-
-class FindDupesGtk(Gtk.Window):
-    def __init__(self):
-        Gtk.Window.__init__(self, title='Gtk Front-end for findDupes')
-        self.grid = Gtk.Grid()
-        self.grid.set_column_homogeneous(True)
-        self.grid.set_row_homogeneous(True)
-        self.add(self.grid)
-        self.dupes_liststore = Gtk.ListStore(str)             
-        self.treeview = Gtk.TreeView(self.dupes_liststore)
-        renderer = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn('Possible Duplicates', renderer, text=0)
-        self.treeview.append_column(column)
-        self.scrollable_treelist = Gtk.ScrolledWindow()
-        self.scrollable_treelist.set_vexpand(True)
-        self.scrollable_treelist.set_hexpand(True)
-        self.grid.attach(self.scrollable_treelist, 0, 0, 600, 400)
-        self.scrollable_treelist.add(self.treeview)
-        self.show_all()
-
-    def show_message(self, message):
-        print(message)
-    def show_warning(self, message):
-        print('WARNING %s' % message)
-    def add_dupe(self, dupe_description):
-        self.dupes_liststore.append([dupe_description])
-
 class DupeFinder:
     song_list = list()
     song_length_dict = defaultdict(list)
                                            
-    def __init__(self, ui):
-        self.ui = ui
-
     def scan(self, directory):
         self.build_song_list(directory)
         self.find_dupes()
@@ -90,16 +51,4 @@ class DupeFinder:
                     self.ui.add_dupe(song.filename)
 	
 
-#ui = TextUI()
-#finder = DupeFinder(ui)
-#finder.scan(PATH_TO_PROCESS)
-#finder.list_dict()
-
-win = FindDupesGtk()
-finder = DupeFinder(win)
-finder.scan(PATH_TO_PROCESS)
-finder.list_dict()
-win.connect('delete-event', Gtk.main_quit)
-win.show_all()
-Gtk.main()
 
