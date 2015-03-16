@@ -2,8 +2,6 @@ import threading
 from gi.repository import GLib, Gtk
 import findDupes
 
-PATH_TO_PROCESS = '/Music'
-
 class FindDupesGtk(Gtk.Window):
     def __init__(self, dupe_finder):
         self.dupe_finder = dupe_finder
@@ -16,11 +14,12 @@ class FindDupesGtk(Gtk.Window):
 
         top_box = Gtk.Box(spacing=5)
         main_box.pack_start(top_box, False, False, 0)
-        
-        self.path_entry = Gtk.Entry()
-        self.path_entry.set_text(PATH_TO_PROCESS)
-        top_box.pack_start(self.path_entry, True, True, 0)
-        
+
+        chooser_title = 'Pick a directory to scan'
+        action = Gtk.FileChooserAction.SELECT_FOLDER
+        self.path_chooser_button = Gtk.FileChooserButton.new(chooser_title, action)
+        top_box.pack_start(self.path_chooser_button, False, False, 0)
+              
         self.scan_button = Gtk.Button('Scan')
         self.scan_button.connect('clicked', self.on_scan_button_clicked)
         top_box.pack_start(self.scan_button, False, False, 0)
@@ -44,13 +43,13 @@ class FindDupesGtk(Gtk.Window):
         self.dupes_liststore.clear()
         self.scan_button.set_label('Scanning...')
         self.scan_button.set_sensitive(False)
-        
         scan_thread = threading.Thread(target=self.run_scan)
         scan_thread.start()
 
     def run_scan(self):
-        self.show_message('Scanning...')
-        self.dupe_finder.scan(self.path_entry.get_text())
+        dir_to_scan = self.path_chooser_button.get_filename()
+        self.show_message('Scanning %s...' % dir_to_scan)
+        self.dupe_finder.scan(dir_to_scan)
         self.dupe_finder.list_dict()
         GLib.idle_add(self.scan_button.set_label, 'Scan')
         GLib.idle_add(self.scan_button.set_sensitive, True)
