@@ -25,17 +25,27 @@ class FindDupesGtk(Gtk.Window):
         top_box.pack_start(self.scan_button, False, False, 0)
         
         self.dupes_liststore = Gtk.ListStore(str)             
-        self.treeview = Gtk.TreeView(self.dupes_liststore)
+        treeview = Gtk.TreeView(self.dupes_liststore)
         renderer = Gtk.CellRendererText()
         column = Gtk.TreeViewColumn('Possible Duplicates', renderer, text=0)
-        self.treeview.append_column(column)
-        self.scrollable_treelist = Gtk.ScrolledWindow()
-        self.scrollable_treelist.set_vexpand(True)
-        self.scrollable_treelist.set_hexpand(True)
+        treeview.append_column(column)
+        scrollable_treelist = Gtk.ScrolledWindow()
+        scrollable_treelist.set_vexpand(True)
+        scrollable_treelist.set_hexpand(True)
         
-        self.scrollable_treelist.add(self.treeview)
+        scrollable_treelist.add(treeview)
 
-        main_box.pack_start(self.scrollable_treelist, True, True, 0)
+        main_box.pack_start(scrollable_treelist, True, True, 0)
+
+        console_scrolledwindow = Gtk.ScrolledWindow()
+        console_scrolledwindow.set_hexpand(True)
+        console_scrolledwindow.set_vexpand(True)
+        textview = Gtk.TextView()
+        textview.set_editable(False)
+        self.textbuffer = textview.get_buffer()
+        console_scrolledwindow.add(textview)
+
+        main_box.pack_start(console_scrolledwindow, True, True, 0)
         
         self.show_all()
 
@@ -55,11 +65,15 @@ class FindDupesGtk(Gtk.Window):
         GLib.idle_add(self.scan_button.set_sensitive, True)
 
     def show_message(self, message):
-        print(message)
+        GLib.idle_add(self.console_append, message)
     def show_warning(self, message):
-        print('WARNING %s' % message)
+        GLib.idle_add(self.console_append, 'WARNING %s' % message)
     def add_dupe(self, dupe_description):
         self.dupes_liststore.append([dupe_description])
+
+    def console_append(self, message):
+        end_iter = self.textbuffer.get_end_iter()
+        self.textbuffer.insert(end_iter, message + '\n')
 
 #chickens, eggs and bad design
 finder = findDupes.DupeFinder()
