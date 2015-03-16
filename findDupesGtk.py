@@ -1,4 +1,5 @@
-from gi.repository import Gtk
+import threading
+from gi.repository import GLib, Gtk
 import findDupes
 
 PATH_TO_PROCESS = '/Music'
@@ -40,9 +41,19 @@ class FindDupesGtk(Gtk.Window):
         self.show_all()
 
     def on_scan_button_clicked(self, widget):
+        self.dupes_liststore.clear()
+        self.scan_button.set_label('Scanning...')
+        self.scan_button.set_sensitive(False)
+        
+        scan_thread = threading.Thread(target=self.run_scan)
+        scan_thread.start()
+
+    def run_scan(self):
         self.show_message('Scanning...')
         self.dupe_finder.scan(self.path_entry.get_text())
         self.dupe_finder.list_dict()
+        GLib.idle_add(self.scan_button.set_label, 'Scan')
+        GLib.idle_add(self.scan_button.set_sensitive, True)
 
     def show_message(self, message):
         print(message)

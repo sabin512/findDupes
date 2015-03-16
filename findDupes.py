@@ -23,6 +23,8 @@ class DupeFinder:
     song_length_dict = defaultdict(list)
                                            
     def scan(self, directory):
+        self.song_list = list()
+        self.song_length_dict = defaultdict(list)
         self.build_song_list(directory)
         self.find_dupes()
 
