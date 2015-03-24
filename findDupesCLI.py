@@ -10,7 +10,9 @@ class TextUI:
         print(message)
     def show_warning(self, message):
         if self.verbose:
-            print('WARNING %s' % message)
+            print('Warning %s' % message)
+    def show_error(self, message):
+        print('ERROR %s' % message)
     def add_dupe(self, dupe_description):
         self.dupe_list.append(dupe_description)
     def produce_list(self):

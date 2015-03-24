@@ -19,7 +19,7 @@ class FindDupesGtk(Gtk.Window):
         action = Gtk.FileChooserAction.SELECT_FOLDER
         self.path_chooser_button = Gtk.FileChooserButton.new(chooser_title, action)
         top_box.pack_start(self.path_chooser_button, False, False, 0)
-              
+        
         self.scan_button = Gtk.Button('Scan')
         self.scan_button.connect('clicked', self.on_scan_button_clicked)
         top_box.pack_start(self.scan_button, False, False, 0)
@@ -42,12 +42,17 @@ class FindDupesGtk(Gtk.Window):
         console_scrolledwindow.set_vexpand(True)
         textview = Gtk.TextView()
         textview.set_editable(False)
+        textview.connect('size-allocate', self.console_changed)
         self.textbuffer = textview.get_buffer()
         console_scrolledwindow.add(textview)
 
         main_box.pack_start(console_scrolledwindow, True, True, 0)
         
         self.show_all()
+
+    def console_changed(self, widget, event, data=None):
+        adjustment = widget.get_vadjustment()
+        adjustment.set_value(adjustment.get_upper() - adjustment.get_page_size())
 
     def on_scan_button_clicked(self, widget):
         self.dupes_liststore.clear()
@@ -67,7 +72,10 @@ class FindDupesGtk(Gtk.Window):
     def show_message(self, message):
         GLib.idle_add(self.console_append, message)
     def show_warning(self, message):
-        GLib.idle_add(self.console_append, 'WARNING %s' % message)
+        GLib.idle_add(self.console_append, 'Warning %s' % message)
+    def show_error(self, message):
+        print('Trying to show error %s' % message)
+        GLib.idle_add(self.console_append, 'ERROR %s' % message)
     def add_dupe(self, dupe_description):
         self.dupes_liststore.append([dupe_description])
 

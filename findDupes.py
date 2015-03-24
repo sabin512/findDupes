@@ -1,16 +1,15 @@
 import os.path
 import os
 from collections import defaultdict
-from mutagen.mp3 import MP3
+from mutagen.mp3 import MP3, HeaderNotFoundError
 
 MP3_EXTENSION = '.mp3'
 
-def get_song(filename):        
+def get_song(filename):    
     audio = MP3(filename)
     length = audio.info.length
     size = os.path.getsize(filename)
     return Song(filename, size, length)
-
 
 class Song:
     def __init__(self, filename, size, length):
@@ -32,7 +31,10 @@ class DupeFinder:
         if not filename.endswith(MP3_EXTENSION):
             self.ui.show_warning('Skipping non-song %s' % os.path.basename(filename))
             return
-        self.song_list.append(get_song(filename))
+        try:
+            self.song_list.append(get_song(filename))
+        except HeaderNotFoundError as e:
+            self.ui.show_error('Failed to process %s' % filename)
 
     def build_song_list(self, directory):                
         for root, dirs, files in os.walk(directory):
